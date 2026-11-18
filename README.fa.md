@@ -7,21 +7,25 @@
 
 ## نصب
 
-1. آخرین نسخه را از Releaseها دانلود و در یک مسیر دائمی استخراج کنید.
+1. یکی از نسخه‌ها را دانلود و در یک مسیر دائمی استخراج کنید:
+   - [v2.0.0](https://github.com/mahdiweb3/ad-cleaner/releases/download/v2.0.0/ad-cleaner-v2.0.0.zip) — همه سایت‌ها (پیشنهادی)
+   - [v1.0.0](https://github.com/mahdiweb3/ad-cleaner/releases/download/v1.0.0/ad-cleaner-v1.0.0.zip) — فقط یوتیوب
 2. `chrome://extensions` → فعال‌کردن **Developer mode**.
 3. **Load unpacked** → پوشه استخراج‌شده.
-4. یوتیوب را رفرش کنید.
+4. هر سایتی را باز کنید.
 
 ## فایل‌ها
 
 | فایل | نقش |
 |---|---|
-| `ext/manifest.json` | مانیفست MV3: قواعد `declarative_net_request` + اسکریپت محتوا روی همه سایت‌ها |
-| `ext/rules.json` | حدود ۴۸,۰۰۰ دامنه تبلیغاتی از EasyList → ۱۹۴ قاعده redirect |
-| `ext/filters.css` | حدود ۱۳,۰۰۰ سلکتور CSS برای پنهان‌کردن بنرها |
-| `ext/main.js` | حذف `adPlacements` / `adSlots` / `playerAds` از پاسخ پلیر یوتیوب |
-| `build_rules.py` | بازسازی `rules.json` و `filters.css` از منبع EasyList |
-| `test_v2.py` | تست واقعی Chrome با Playwright — ۷ بررسی |
+| `src/v2/manifest.json` | مانیفست MV3: قواعد `declarative_net_request` + اسکریپت محتوا روی همه سایت‌ها |
+| `src/v2/rules.json` | ۴۸,۰۹۷ دامنه تبلیغاتی از EasyList → ۱۹۴ قاعده redirect |
+| `src/v2/filters.css` | ۱۳,۰۷۶ سلکتور CSS برای پنهان‌کردن بنرها |
+| `src/v2/main.js` | حذف `adPlacements` / `adSlots` / `playerAds` از پاسخ پلیر یوتیوب |
+| `src/v2/stub.js`، `src/v2/stub.gif` | فایل‌های محلی کوچک که درخواست فیلترشده به آن‌ها redirect می‌شود |
+| `src/v2/build_rules.py` | بازسازی `rules.json` و `filters.css` از منبع EasyList |
+| `src/v2/test_v2.py` | تست واقعی Chrome با Playwright — ۷ بررسی |
+| `src/v1/` | سورس نسخه ۱.۰.۰ (فقط یوتیوب، ۱۴۲ قاعده) |
 
 ## چرا تشخیص داده نمی‌شود
 
@@ -31,16 +35,23 @@
 
 ## یوتیوب
 
-دامنه‌های تبلیغاتی یوتیوب (`youtube.com`، `googlevideo.com`، `ytimg.com`، …) عمداً از راه شبکه مسدود **نمی‌شوند** چون پخش را می‌شکند. تبلیغ یوتیوب با پاک‌سازی payload پلیر در `ext/main.js` حذف می‌شود. اگر یوتیوب کلیدهای payload را عوض کرد، `main.js` را به‌روز کنید.
+دامنه‌های تبلیغاتی یوتیوب (`youtube.com`، `googlevideo.com`، `ytimg.com`، …) عمداً از راه شبکه مسدود **نمی‌شوند** چون پخش را می‌شکند. تبلیغ یوتیوب با پاک‌سازی payload پلیر در `src/v2/main.js` حذف می‌شود. اگر یوتیوب کلیدهای payload را عوض کرد، `main.js` را به‌روز کنید.
 
 ## بازسازی و تست
 
 ```bash
-python3 build_rules.py   # EasyList -> ext/rules.json + ext/filters.css
+cd src/v2
+python3 build_rules.py   # EasyList -> rules.json + filters.css
 python3 test_v2.py       # تست ۷ مرحله‌ای واقعی در Chrome
 ```
 
 ## نسخه‌ها
 
-- **v1.0.0** — نسخه اول (یوتیوب + دامنه‌های تبلیغاتی عمومی، ۱۴۲ قاعده)
-- **v2.0.0** — redirect برای ضدتشخیص، گسترش دامنه‌ها با EasyList (۴۸ هزار دامنه)، CSS آرایشی، پاک‌سازی payload یوتیوب
+- **[v2.0.0](https://github.com/mahdiweb3/ad-cleaner/releases/tag/v2.0.0)** — redirect برای ضدتشخیص، گسترش دامنه‌ها با EasyList (۴۸,۰۹۷ دامنه)، CSS آرایشی، پاک‌سازی payload یوتیوب
+- **[v1.0.0](https://github.com/mahdiweb3/ad-cleaner/releases/tag/v1.0.0)** — نسخه اول (یوتیوب + دامنه‌های تبلیغاتی عمومی، ۱۴۲ قاعده)
+
+هر دو zip در ریشه ریپو هم کامیت شده‌اند (`ad-cleaner-v1.0.0.zip`، `ad-cleaner-v2.0.0.zip`).
+
+## مجوز
+
+MIT
