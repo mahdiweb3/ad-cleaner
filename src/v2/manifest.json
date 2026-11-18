@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "Page Cleaner",
+  "version": "2.0.0",
+  "description": "Removes intrusive page elements and unwanted video interruptions.",
+  "minimum_chrome_version": "111",
+  "icons": { "16": "icon16.png", "48": "icon48.png", "128": "icon128.png" },
+  "permissions": ["declarativeNetRequest"],
+  "host_permissions": ["<all_urls>"],
+  "declarative_net_request": {
+    "rule_resources": [
+      { "id": "filters", "enabled": true, "path": "rules.json" }
+    ]
+  },
+  "web_accessible_resources": [
+    { "resources": ["stub.js", "stub.gif"], "matches": ["<all_urls>"] }
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "css": ["filters.css"],
+      "run_at": "document_start",
+      "all_frames": true,
+      "match_about_blank": true
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["main.js"],
+      "world": "MAIN",
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ]
+}

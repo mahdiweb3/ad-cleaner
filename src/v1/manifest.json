@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "Ad Cleaner \u2014 YouTube",
+  "version": "1.0.0",
+  "description": "Blocks ads site-wide and skips YouTube video ads without breaking playback.",
+  "icons": {"16": "icon16.png", "48": "icon48.png", "128": "icon128.png"},
+  "permissions": [
+    "declarativeNetRequest"
+  ],
+  "host_permissions": [
+    "*://*.youtube.com/*",
+    "*://*.googlesyndication.com/*",
+    "*://*.doubleclick.net/*",
+    "*://*.googleadservices.com/*"
+  ],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ads",
+        "enabled": true,
+        "path": "rules.json"
+      }
+    ]
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.youtube.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ]
+}
