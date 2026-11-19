@@ -19,8 +19,8 @@
 | فایل | نقش |
 |---|---|
 | `src/v2/manifest.json` | مانیفست MV3: قواعد `declarative_net_request` + اسکریپت محتوا |
-| `src/v2/rules.json` | ۴۶,۵۳۷ دامنه تبلیغاتی → ۱۸۸ قاعده‌ی دامنه‌ای + ۱,۸۴۲ قاعده‌ی مسیر |
-| `src/v2/filters.css` | ۱۳,۰۷۶ سلکتور CSS برای پنهان‌کردن بنرها |
+| `src/v2/rules.json` | ۹۳,۰۷۴ دامنه تبلیغاتی → ۱۸۸ قاعده‌ی دامنه‌ای + ۱,۸۴۲ قاعده‌ی مسیر |
+| `src/v2/filters.css` | ۱۳,۰۴۴ سلکتور CSS برای پنهان‌کردن بنرها |
 | `src/v2/main.js` | حذف `adPlacements` / `adSlots` / `playerAds` از پاسخ پلیر یوتیوب |
 | `src/v2/stub.js`، `src/v2/stub.gif` | فایل‌های محلی کوچک که درخواست فیلترشده به آن‌ها redirect می‌شود |
 | `src/v2/build_rules.py` | بازسازی `rules.json` و `filters.css` از EasyList |

@@ -19,8 +19,8 @@ A Chromium extension that blocks ads **everywhere** (all sites, not just YouTube
 | File | Purpose |
 |---|---|
 | `src/v2/manifest.json` | MV3 manifest: `declarative_net_request` ruleset + content scripts |
-| `src/v2/rules.json` | 46,537 ad hostnames as 188 host-chunk rules + 1,842 path rules |
-| `src/v2/filters.css` | 13,076 cosmetic selectors (hide ad boxes) |
+| `src/v2/rules.json` | 93,074 ad hostnames in 188 host rules + 1,842 path rules |
+| `src/v2/filters.css` | 13,044 cosmetic selectors (hide ad boxes) |
 | `src/v2/main.js` | Strips `adPlacements` / `adSlots` / `playerAds` from the YouTube player response |
 | `src/v2/stub.js`, `src/v2/stub.gif` | Tiny local stand-ins that filtered requests redirect to |
 | `src/v2/build_rules.py` | Rebuilds `rules.json` + `filters.css` from EasyList sources |
