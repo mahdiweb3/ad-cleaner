@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Page Cleaner",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Removes intrusive page elements and unwanted video interruptions.",
   "minimum_chrome_version": "111",
   "icons": { "16": "icon16.png", "48": "icon48.png", "128": "icon128.png" },
@@ -24,7 +24,7 @@
       "match_about_blank": true
     },
     {
-      "matches": ["<all_urls>"],
+      "matches": ["*://*.youtube.com/*", "*://*.youtube-nocookie.com/*"],
       "js": ["main.js"],
       "world": "MAIN",
       "run_at": "document_start",
