@@ -8,7 +8,8 @@ A Chromium extension that blocks ads **everywhere** (all sites, not just YouTube
 ## Install
 
 1. Download a release zip and extract it somewhere permanent:
-   - [v2.1.0](https://github.com/mahdiweb3/ad-cleaner/releases/download/v2.1.0/ad-cleaner-v2.1.0.zip) — all sites (recommended)
+   - [v2.1.2](https://github.com/mahdiweb3/ad-cleaner/releases/download/v2.1.2/ad-cleaner-v2.1.2.zip) — all sites (recommended)
+   - [v2.1.0](https://github.com/mahdiweb3/ad-cleaner/releases/download/v2.1.0/ad-cleaner-v2.1.0.zip) — ads reappear after switching videos
    - [v1.0.0](https://github.com/mahdiweb3/ad-cleaner/releases/download/v1.0.0/ad-cleaner-v1.0.0.zip) — YouTube only
 2. Open `chrome://extensions`, enable **Developer mode**.
 3. Click **Load unpacked** and select the extracted folder.
@@ -39,7 +40,9 @@ This extension **redirects** filtered requests to a tiny local stub instead. The
 
 YouTube ad hostnames (`youtube.com`, `googlevideo.com`, `ytimg.com`, …) are deliberately **not** network-blocked — blocking them breaks playback. YouTube ads are removed by cleaning the player payload in `src/v2/main.js`. If YouTube renames its payload keys, update `main.js`.
 
-`main.js` is injected only on youtube.com (manifest `matches`). It patches `JSON.parse` and `Response.prototype.json` — never `window.fetch`, because returning a new `Response` drops `response.url`/`type` and stalls the SPA router.
+`main.js` is injected only on youtube.com (manifest `matches`). It patches `JSON.parse`, `Response.prototype.json` and the `XMLHttpRequest.response` getter — never `window.fetch`, because returning a new `Response` drops `response.url`/`type` and stalls the SPA router.
+
+The XHR getter is what makes video switching work: a SPA switch fetches `/youtubei/v1/player` with `responseType='json'`, which the browser parses itself, so the `JSON.parse`/`Response.prototype.json` hooks never see it. Only `json` responses are touched; `text`/`blob`/`arraybuffer` are returned untouched.
 
 ## Rebuild / test
 
@@ -52,6 +55,7 @@ python3 smoke_hosts.py   # ad-host coverage + no over-blocking
 
 ## Releases
 
+- **[v2.1.2](https://github.com/mahdiweb3/ad-cleaner/releases/tag/v2.1.2)** — fixes ads appearing when switching YouTube videos without a reload (`XMLHttpRequest.response` × `responseType='json'` was never hooked)
 - **[v2.1.0](https://github.com/mahdiweb3/ad-cleaner/releases/tag/v2.1.0)** — fixes YouTube video switching (SPA hang), stops over-blocking `google.com`/`cse.google.com` (sign-in frame), path rules kept as path rules, `main.js` scoped to youtube.com
 - **[v2.0.0](https://github.com/mahdiweb3/ad-cleaner/releases/tag/v2.0.0)** — redirect-based anti-detection, EasyList host expansion (48,097 hosts), cosmetic CSS, YouTube payload cleaning
 - **[v1.0.0](https://github.com/mahdiweb3/ad-cleaner/releases/tag/v1.0.0)** — first version (YouTube + general ad hosts, 142 rules)

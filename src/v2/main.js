@@ -1,5 +1,12 @@
 // ponytail: MAIN world, document_start. Deletes ad payload keys in place so the
 // player never sees them (no ad request is made, so nothing to detect).
+// v2.1.2: adds an XMLHttpRequest.response hook. This is the real fix for "ads when
+// switching videos": first page load ships the payload inline in HTML (setter path),
+// but a SPA video switch is fetched with XHR + responseType='json', where the
+// browser parses the JSON itself -- JSON.parse and Response.prototype.json never
+// run, so v2.1.0 cleaned nothing and the ad played. F5 reloaded the inline path,
+// which is why a refresh appeared to fix it.
+// v2.1.1: dirty() also looked one level into playerResponse.
 // v2.1.0: only JSON.parse + Response.prototype.json are patched. v2.0.0 replaced
 // window.fetch with a NEW Response object, which dropped response.url/type and
 // stalled YouTube's SPA router -> switching videos hung until a manual refresh.
@@ -12,20 +19,27 @@
   if (!/(^|\.)(youtube\.com|youtube-nocookie\.com)$/.test(location.hostname)) return;
 
   const KEYS = ['adPlacements', 'adSlots', 'playerAds', 'adBreakParams', 'adBreakHeartbeatParams'];
+  // Envelope used by some player fetches; first-load payloads are the player
+  // response itself, which is why both shapes must be handled.
+  const inner = (o) => {
+    const p = o.playerResponse || (o.response && o.response.playerResponse);
+    return p && typeof p === 'object' ? p : null;
+  };
   const dirty = (o) => {
     for (const k of KEYS) if (k in o) return true;
-    return false;
+    const p = inner(o);
+    return p ? KEYS.some((k) => k in p) : false;
   };
   const clean = (o) => {
     try {
       for (const k of KEYS) delete o[k];
-      if (o.playerResponse) clean(o.playerResponse);
-      if (o.response && o.response.playerResponse) clean(o.response.playerResponse);
+      const p = inner(o);
+      if (p) clean(p);
     } catch (e) {}
     return o;
   };
-  // ponytail: top-level check only; payloads always carry the keys at the root of
-  // playerResponse. Recursing into every parsed object would stall big responses.
+  // ponytail: two levels only (root -> playerResponse -> playerResponse). Deeper
+  // recursion would walk every parsed object and stall big responses.
   const maybe = (r) => (r && typeof r === 'object' && dirty(r) ? clean(r) : r);
 
   try {
@@ -44,6 +58,24 @@
       Response.prototype.json = function () {
         return rj.apply(this, arguments).then(maybe);
       };
+    }
+  } catch (e) {}
+
+  // The one v2.1.0 missed: XHR with responseType='json' is parsed by the browser,
+  // so the object reaches the app without passing through JSON.parse. Patch the
+  // getter and clean on read; same object is returned, nothing is copied.
+  try {
+    const d = Object.getOwnPropertyDescriptor(XMLHttpRequest.prototype, 'response');
+    if (d && d.get) {
+      Object.defineProperty(XMLHttpRequest.prototype, 'response', {
+        configurable: true,
+        enumerable: d.enumerable,
+        get() {
+          const v = d.get.call(this);
+          // ponytail: only json responses -- text/blob/arraybuffer must stay untouched.
+          return this.responseType === 'json' ? maybe(v) : v;
+        },
+      });
     }
   } catch (e) {}
 

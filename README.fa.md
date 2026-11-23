@@ -8,7 +8,8 @@
 ## نصب
 
 1. یکی از نسخه‌ها را دانلود و در یک مسیر دائمی استخراج کنید:
-   - [v2.1.0](https://github.com/mahdiweb3/ad-cleaner/releases/download/v2.1.0/ad-cleaner-v2.1.0.zip) — همه سایت‌ها (پیشنهادی)
+   - [v2.1.2](https://github.com/mahdiweb3/ad-cleaner/releases/download/v2.1.2/ad-cleaner-v2.1.2.zip) — همه سایت‌ها (پیشنهادی)
+   - [v2.1.0](https://github.com/mahdiweb3/ad-cleaner/releases/download/v2.1.0/ad-cleaner-v2.1.0.zip) — تبلیغ پس از تعویض ویدیو برمی‌گردد
    - [v1.0.0](https://github.com/mahdiweb3/ad-cleaner/releases/download/v1.0.0/ad-cleaner-v1.0.0.zip) — فقط یوتیوب
 2. `chrome://extensions` → فعال‌کردن **Developer mode**.
 3. **Load unpacked** → پوشه استخراج‌شده.
@@ -38,7 +39,9 @@
 
 دامنه‌های یوتیوب (`youtube.com`، `googlevideo.com`، `ytimg.com`، …) عمداً بلاک نمی‌شوند چون پخش را می‌شکنند. تبلیغ یوتیوب با پاک‌سازی payload پلیر در `src/v2/main.js` حذف می‌شود. اگر یوتیوب کلیدها را عوض کند، `main.js` را آپدیت کنید.
 
-`main.js` فقط روی youtube.com تزریق می‌شود (فیلد `matches` در مانیفست) و فقط `JSON.parse` و `Response.prototype.json` را patch می‌کند — نه `window.fetch`؛ چون برگرداندن `Response` تازه، `response.url`/`type` را از بین می‌برد و روتر SPA یوتیوب گیر می‌کند و تعویض ویدیو تا رفرش دستی قفل می‌شود.
+`main.js` فقط روی youtube.com تزریق می‌شود (فیلد `matches` در مانیفست) و `JSON.parse`، `Response.prototype.json` و getter مربوط به `XMLHttpRequest.response` را patch می‌کند — نه `window.fetch`؛ چون برگرداندن `Response` تازه، `response.url`/`type` را از بین می‌برد و روتر SPA یوتیوب گیر می‌کند و تعویض ویدیو تا رفرش دستی قفل می‌شود.
+
+همین getter مربوط به XHR است که تعویض ویدیو را درست می‌کند: تعویض در SPA، درخواست `/youtubei/v1/player` را با `responseType='json'` می‌فرستد و مرورگر خودش JSON را پارس می‌کند، پس قلاب‌های `JSON.parse`/`Response.prototype.json` هرگز آن را نمی‌بینند. فقط پاسخ‌های `json` دست می‌خورند؛ `text`/`blob`/`arraybuffer` دست‌نخورده برمی‌گردند.
 
 ## بازسازی و تست
 
@@ -51,6 +54,7 @@ python3 smoke_hosts.py   # پوشش دامنه‌های تبلیغاتی + کن�
 
 ## نسخه‌ها
 
+- **[v2.1.2](https://github.com/mahdiweb3/ad-cleaner/releases/tag/v2.1.2)** — رفع پخش تبلیغ هنگام تعویض ویدیوی یوتیوب بدون رفرش (مسیر `XMLHttpRequest.response` با `responseType='json'` قلاب نداشت)
 - **[v2.1.0](https://github.com/mahdiweb3/ad-cleaner/releases/tag/v2.1.0)** — رفع گیر تعویض ویدیوی یوتیوب، رفع بلاک‌شدن `google.com`/`cse.google.com` (فریم لاگین)، قاعده‌های مسیر از قاعده‌های دامنه جدا شدند، `main.js` فقط روی یوتیوب
 - **[v2.0.0](https://github.com/mahdiweb3/ad-cleaner/releases/tag/v2.0.0)** — ضدتشخیص با redirect، گسترش دامنه‌های EasyList (۴۸,۰۹۷)، CSS کازمتیک، پاک‌سازی payload یوتیوب
 - **[v1.0.0](https://github.com/mahdiweb3/ad-cleaner/releases/tag/v1.0.0)** — نسخه اول (یوتیوب + دامنه‌های تبلیغاتی، ۱۴۲ قاعده)

@@ -86,6 +86,40 @@ def main():
         check("window.fetch left native", yt.evaluate("window.fetch.toString().includes('[native code]')"))
         check("Response.prototype.json patched",
               yt.evaluate("!Response.prototype.json.toString().includes('[native code]')"))
+        # v2.1.2 regression: a SPA video switch fetches /youtubei/v1/player with
+        # XHR + responseType='json'. The browser parses that JSON itself, so
+        # JSON.parse / Response.prototype.json never run and v2.1.0 cleaned nothing.
+        check("XHR response getter hooked",
+              yt.evaluate("!String(Object.getOwnPropertyDescriptor("
+                          "XMLHttpRequest.prototype,'response').get)"
+                          ".includes('[native code]')"))
+        xhr = yt.evaluate("""async () => {
+          const KEYS=['adPlacements','adSlots','playerAds','adBreakParams','adBreakHeartbeatParams'];
+          const k = window.ytcfg.get('INNERTUBE_API_KEY');
+          const ctx = window.ytcfg.get('INNERTUBE_CONTEXT');
+          const get = (rt) => new Promise((res) => {
+            const x = new XMLHttpRequest();
+            x.open('POST','/youtubei/v1/player?key='+k+'&prettyPrint=false');
+            x.setRequestHeader('content-type','application/json');
+            x.setRequestHeader('x-youtube-client-name','1');
+            x.setRequestHeader('x-youtube-client-version', window.ytcfg.get('INNERTUBE_CLIENT_VERSION'));
+            if (rt) x.responseType = rt;
+            x.onload = () => res({rt, status: x.status, body: x.response});
+            x.onerror = () => res({rt, error: 'xhr failed'});
+            x.send(JSON.stringify({videoId:'xOXolSQcEb4', context: ctx}));
+          });
+          const j = await get('json');
+          const b = j.body || {};
+          const adKeys = Object.keys(b).filter(k => KEYS.includes(k))
+            .concat(Object.keys(b.playerResponse || {}).filter(k => KEYS.includes(k)));
+          const t = await get('text');
+          return {json: {status: j.status, adKeys},
+                  textIsString: typeof t.body === 'string',
+                  textHasKeys: typeof t.body === 'string' && KEYS.some(k => t.body.includes('"'+k+'"'))};
+        }""")
+        check("XHR json player payload clean", xhr["json"]["status"] == 200 and not xhr["json"]["adKeys"],
+              str(xhr["json"]))
+        check("XHR text responses untouched", xhr["textIsString"], str(xhr["textIsString"]))
         st = yt.evaluate("""() => { const v = document.querySelector('video');
             return v && {rs: v.readyState, paused: v.paused, src: !!v.currentSrc,
                          dur: Math.round(v.duration || 0)}; }""")
